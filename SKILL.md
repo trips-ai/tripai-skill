@@ -1,5 +1,5 @@
 ---
-name: wendao_skill
+name: wendao-skill
 description: |
   您的全时 AI 旅伴，由携程官方倾力打造，已累计为超 5000 万用户提供解答。无论是预订机酒火车票、定制旅行攻略，还是寻找当地特色玩乐，只需一句话，问道为您轻松安排
 homepage: https://www.ctrip.com/wendao/openclaw
