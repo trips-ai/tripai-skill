@@ -7,6 +7,8 @@ metadata:
   openclaw:
     emoji: ✈️
     requires:
+      env:
+        - WENDAO_API_KEY
       bins:
         - curl
         - jq
@@ -17,7 +19,9 @@ metadata:
 ## Setup
 
 1. **获取 token（API key）** — 打开 [www.ctrip.com/wendao/openclaw](https://www.ctrip.com/wendao/openclaw)，按页面指引申请并复制你的 **API token**（仅保存在本人可信环境，勿截图含完整密钥发到公开渠道）。
-2. **提供 token（二选一）** — **（1）设置环境变量**：配置 **`WENDAO_API_KEY`**；OpenClaw 在 **`~/.openclaw/.env`** 写入 `WENDAO_API_KEY=<你的 token>`（建议文件仅本人可读），保存后**重启 gateway**；也可用平台密钥、宿主机 env、CI secret。**（2）放在对话中**：由用户在**当前对话**里提供 API key，请求 JSON 的 **`token`** 使用该值。**若环境变量与对话同时有值，以环境变量为准**。勿在回复或日志中回显完整密钥，勿写入仓库。
+2. **提供 token（二选一）**
+   - **环境变量 `WENDAO_API_KEY`（推荐）**：由用户或平台在 skill 运行环境中配置好该变量；skill 直接读取，不操作任何配置文件。
+   - **对话中提供**：用户在当前对话里直接给出 API key；skill 仅在本次调用中使用，不持久化、不写文件、不回显完整密钥。**若环境变量已设置，优先使用环境变量。**
 3. **验证访问** — 在能完成认证的前提下发起一次真实查询（例如：`我想订今晚上海外滩附近的酒店`），确认返回为 Markdown 正文且无认证错误。
 
 ## Security & trust (before production use)
@@ -29,13 +33,10 @@ metadata:
 
 ## 使用方法
 
-**执行前，先确定 token 值（按优先级）：**
+**执行前，先确定 token（按优先级）：**
 
-```bash
-# 1. 优先用环境变量
-# 2. 若环境变量为空，则使用用户在本次对话中提供的 key（直接赋值给 TOKEN）
-export TOKEN="${WENDAO_API_KEY:-<用户在对话中提供的key>}"
-```
+1. 若 `WENDAO_API_KEY` 已设置，使用该环境变量值作为 `token`。
+2. 否则，使用用户在本次对话中提供的 key 作为 `token`（仅用于本次调用，不持久化）。
 
 ### 通用查询
 
