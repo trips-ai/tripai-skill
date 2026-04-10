@@ -1,242 +1,168 @@
-# CCT Agent MCP Toolkit
+<p align="center">
+  <h1 align="center"> AI Agent Travel Skills — TripGenie & TripAI</h1>
+  <p align="center">
+    <strong>Travel search powered by Trip.com and Ctrip — right inside Claude Code, OpenClaw, and other skill-compatible agents.</strong>
+  </p>
+  <p align="center">
+    Search flights, hotels, trains, attractions, and trip planning with natural language.<br/>
+    No browser tabs. No app switching. Just ask.
+  </p>
+  <p align="center">
+    <a href="https://clawhub.ai/trips-ai/trip-tripgenie-skill"><img src="https://img.shields.io/badge/TripGenie-OpenClaw-0086F6?labelColor=1a1a1a" alt="TripGenie OpenClaw"></a>
+    <a href="https://clawhub.ai/trips-ai/wendao-skill"><img src="https://img.shields.io/badge/Wendao-OpenClaw-2563EB?labelColor=1a1a1a" alt="TripAI OpenClaw"></a>
+    <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="MIT License"></a>
+  </p>
+  <p align="center">
+    <a href="#overview">Overview</a> ·
+    <a href="#features">Features</a> ·
+    <a href="#setup--configuration">Setup</a> ·
+    <a href="#usage-examples">Usage</a> ·
+    <a href="#security--privacy">Security</a> ·
+    <a href="#license">License</a>
+  </p>
+</p>
 
-FastMCP-based MCP server for travel search functionality with SSE streaming support.
+---
+
+## Overview
+
+- **TripGenie**: Powered by [Trip.com](https://www.trip.com/tripgenie), this skill offers broad, international travel search capabilities, including flights and general-purpose travel questions.
+
+- **TripAI**: Powered by [Ctrip (携程)](https://www.ctrip.com/), this skill provides a comprehensive travel assistant for booking hotels, flights, trains, and getting travel recommendations, with a focus on the Chinese market.
 
 ## Features
 
-- ✅ FastMCP-based MCP server
-- ✅ Travel search tool (sight, hotel, destination, train ticket)
-- ✅ SSE (Server-Sent Events) streaming support
-- ✅ Async API integration with retry mechanism
-- ✅ Test client included
+- **Natural Language Interface**: Just ask your agent for travel information in plain English or Chinese.
+- **Comprehensive Search**: Access a wide range of travel services:
+    - Flights (International and Domestic)
+    - Hotels
+    - Train Tickets
+    - Attraction Recommendations
+- **Direct Integration**: No need to switch to a browser or another app. Get results directly in your chat.
+- **Powered by Industry Leaders**: Leverages the robust APIs of Trip.com and Ctrip.
 
-## Quick Start
+## Setup & Configuration
 
-### Prerequisites
+To use these skills, you need to install them in your agent's environment and configure the necessary API keys.
 
-- Python 3.8+
-- uv or pip for package management
+### 1. Skill Installation
 
-### Installation
-
-```bash
-# Install dependencies
-pip install -r requirements.txt
-
-# Or using uv
-uv pip install -r requirements.txt
-```
-
-**Important**: If you encounter `KeyError: 'websockets-sansio'`, ensure websockets is installed:
+Copy the skill directories into your agent's designated skills folder. For example, for Claude Code:
 
 ```bash
-pip install websockets>=10.0 uvicorn>=0.20.0
-```
+# Copy TripGenie skill
+cp -r tripgenie/ ~/.openclaw/workspace/skills/tripgenie
 
-### Running the Server
+# Copy TripAI skill
+cp -r tripai-skill/ ~/.openclaw/workspace/skills/tripai-skill
+```
+*(Please adapt the path to your specific agent's skill directory if it differs.)*
+
+### 2. API Key Acquisition
+
+Both skills require an API key (token) to function.
+
+- **For TripGenie**: Obtain your API key from [www.trip.com/tripgenie/openclaw](https://www.trip.com/tripgenie/openclaw).
+- **For TripAI**: Obtain your API key from [www.ctrip.com/wendao/openclaw](https://www.ctrip.com/wendao/openclaw).
+
+**Important**: Treat your API keys like passwords. Do not share them publicly or commit them to version control.
+
+### 3. API Key Configuration (Recommended)
+
+The most secure way to configure the keys is by setting them as environment variables. The skills will automatically detect and use them.
 
 ```bash
-python main.py
+export TRIPGENIE_API_KEY="your-tripgenie-key-here"
+export TRIPAI_API_KEY="your-tripai-key-here"
 ```
 
-Server will start on `http://0.0.0.0:8080`
+You can add these lines to your shell's startup file (e.g., `~/.bashrc`, `~/.zshrc`) to make them persistent.
 
-#### Health Check Endpoints
+Alternatively, you can provide the key in-chat when prompted by the agent, but this is less secure and is not persisted. The environment variable will always take precedence.
 
-The server provides health check endpoints for monitoring:
+## Usage Examples
 
-**Standard endpoint (JSON):**
-```bash
-curl http://localhost:8080/health
-```
+Once installed and configured, you can invoke the skills by asking your agent travel-related questions.
 
-Response:
-```json
-{
-  "status": "healthy",
-  "service": "CCT Agent MCP Toolkit",
-  "timestamp": "2025-10-27T10:30:00",
-  "version": "1.0.0"
-}
-```
+### TripGenie
 
-**Legacy endpoint (Plain text):**
-```bash
-curl http://localhost:8080/vi/health
-```
+#### Scenario 1: Pre-trip precise booking
 
-Response: `succ`
+**Core point:** Clear time, route, and transactional intent.
 
-See `HEALTH_CHECK.md` for detailed configuration and Kubernetes integration.
+> "Help me find a flight from Shanghai to Hong Kong for next Monday"
+>
+> "Book a hotel near Hyde Park in London"
 
-### Testing with Client
-
-In another terminal:
+This triggers the `tripgenie` skill. A flight search may run a command like:
 
 ```bash
-python fastmcp_client.py
+# Example underlying command for a flight search
+jq -n --arg token "$TRIPGENIE_API_KEY" --arg query "flight from SHA to HKG" --arg departure "SHA" --arg arrival "HKG" --arg date "2026-04-06" --arg flight_type "0" \
+'{token: $token, query: $query, departure: $departure, arrival: $arrival, date: $date, flight_type: $flight_type}' | \
+curl -s -X POST https://tripgenie-openclaw-prod.trip.com/openclaw/airline -H "Content-Type: application/json" -d @-
 ```
 
-The client will test:
-1. List available tools
-2. Sight search: "上海迪士尼攻略"
-3. Hotel search: "上海浦东酒店推荐"
+#### Scenario 2: In-destination exploration
 
-## Project Structure
+**Core point:** Immediate services and local exploration based on Location-Based Services (LBS).
 
-```
-cct_agent_mcp_toolkit/
-├── main.py                 # FastMCP server entry point
-├── fastmcp_client.py       # Test client
-├── tools/
-│   └── travel_search.py    # Travel search tool implementation
-├── utils/
-│   ├── intent_type.py      # Intent types
-│   └── status_code.py      # Status codes
-├── global_context.py       # Global context management
-├── requirements.txt        # Python dependencies
-└── README.md              # This file
-```
+> "I'm visiting the Louvre this afternoon. Are there any highly-rated French restaurants nearby to recommend?"
+>
+> "Are there any good places to buy souvenirs near Shinjuku in Tokyo?"
 
-## API Usage
+#### Scenario 3: Audience-specific and thematic travel
 
-### Search Travel
+**Core point:** Vague time or location intent with strong attribute tags (e.g., family, business, budget).
 
-```python
-await client.call_tool("search_travel", {
-    "query": "上海迪士尼攻略",
-    "category": "sight",  # sight, hotel, destination, train ticket
-    "ext_info": {}        # Optional extra parameters
-})
-```
+> "I want to take my family to Phuket. Are there any recommended family-friendly resorts with a water park?"
+>
+> "I want to visit Iceland this winter to see the Northern Lights. Are there any cheap flights?"
 
-### Response Format
+### TripAI
 
-```json
-{
-  "status_code": 0,
-  "result": {
-    "pageItems": [
-      {
-        "title": "Search Results",
-        "content": "...",
-        "source": "travel_api",
-        "extInfo": {...},
-        "rerankScore": 1.0
-      }
-    ]
-  },
-  "error_msg": ""
-}
-```
+#### Scenario 1: Pre-trip precise booking
 
-## Configuration
+**Core point:** Clear time, route, and transactional intent.
 
-### API Endpoint
+> "Book a hotel near Sanlitun in Beijing"
+>
+> "Check tomorrow's high-speed train tickets from Beijing to Shanghai"
 
-Configure in `tools/travel_search.py`:
-
-```python
-api_url = "http://debug-wendao-sight-agent-tool.ctripcorp.com/agent_tool"
-```
-
-### Timeout Settings
-
-- Total timeout: 60 seconds
-- Connect timeout: 5 seconds
-- Read timeout: 30 seconds (supports long SSE streams)
-
-### Categories
-
-- `sight` - Sightseeing/attractions
-- `hotel` - Hotel search
-- `destination` - Destination information
-- `train ticket` - Train ticket search
-
-## SSE Support
-
-The tool automatically detects and handles SSE streaming responses:
-
-- Detects `text/event-stream` content type
-- Accumulates streaming chunks
-- Falls back to regular JSON if not SSE
-- Supports `[DONE]` termination marker
-
-## Development
-
-### Running Tests
+This triggers the `tripai-skill` skill. An example underlying command:
 
 ```bash
-# Run the test client
-python fastmcp_client.py
+# Example underlying command for a general query
+jq -n --arg token "$TRIPAI_API_KEY" --arg query "预订北京三里屯附近的酒店" \
+'{token: $token, query: $query}' | \
+curl -s -X POST https://wendao-skill-prod.ctrip.com/skill/query -H "Content-Type: application/json" -d @-
 ```
 
-### Adding New Tools
+#### Scenario 2: In-destination exploration
 
-Register tools in `main.py`:
+**Core point:** Immediate services and local exploration based on Location-Based Services (LBS).
 
-```python
-@mcp.tool()
-async def your_tool(param: str) -> Dict[str, Any]:
-    """Your tool description"""
-    # Implementation
-    return result
-```
+> "I'm visiting the Forbidden City this afternoon. Are there any highly-rated time-honored restaurants nearby to recommend?"
+>
+> "Are there any good places for shopping near Wukang Road in Shanghai?"
 
-## Status Codes
+#### Scenario 3: Audience-specific and thematic travel
 
-- `0` - Success
-- `-1` - Error (invalid request or server error)
+**Core point:** Vague time or location intent with strong attribute tags (e.g., family, business, budget).
 
-## Error Handling
+> "I want to take my kids to Sanya. Are there any recommended family-friendly resorts with a water park?"
+>
+> "I'm planning to visit Harbin during the May Day holiday. Are there any cheap flights?"
 
-The server includes:
-- Automatic retry (max 2 attempts)
-- Detailed error messages
-- Exception tracking
-- Graceful fallbacks
+## Security & Privacy
 
-## Client Usage
-
-The `fastmcp_client.py` handles `CallToolResult` objects correctly:
-
-```python
-response = await client.call_tool("search_travel", {...})
-
-# Extract content from CallToolResult
-if hasattr(response, 'content'):
-    content = response.content
-    if isinstance(content, list) and len(content) > 0:
-        result_text = content[0].text
-        result_data = json.loads(result_text)
-```
-
-## Troubleshooting
-
-### Connection Refused
-- Ensure server is running: `python main.py`
-- Check port 8080 is available: `lsof -i :8080`
-
-### Import Errors
-- Install dependencies: `pip install -r requirements.txt`
-- Check Python version: `python --version` (need 3.8+)
-
-### API Errors
-- Verify API endpoint is accessible
-- Check network connectivity
-- Review server logs for details
-
-## Dependencies
-
-- `fastmcp>=0.1.0` - FastMCP framework
-- `aiohttp>=3.8.0` - Async HTTP client
-- `pytest>=7.0.0` - Testing framework (dev)
-- `pytest-asyncio>=0.21.0` - Async test support (dev)
+- **API Keys**: Keys are your responsibility. Use environment variables for security. The skills are designed to not log, echo, or persist keys provided in chat.
+- **Third-Party Content**: All responses are generated by external services (Trip.com, Ctrip). Do not assume the content is always accurate or safe. The agent should present the information, but use discretion.
+- **Endpoints**: The skills are hardcoded to use the official production endpoints:
+    - `https://tripgenie-openclaw-prod.trip.com`
+    - `https://wendao-skill-prod.ctrip.com`
+- **Rate Limits**: Be aware of any rate limits, billing, or quotas associated with your API keys.
 
 ## License
 
-Internal use only.
-
-## Support
-
-For issues or questions, please contact the development team.
+[MIT](LICENSE) — Copyright (c) 2026 trip
