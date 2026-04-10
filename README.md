@@ -9,7 +9,7 @@
   </p>
   <p align="center">
     <a href="https://clawhub.ai/trips-ai/trip-tripgenie-skill"><img src="https://img.shields.io/badge/TripGenie-OpenClaw-0086F6?labelColor=1a1a1a" alt="TripGenie OpenClaw"></a>
-    <a href="https://clawhub.ai/trips-ai/wendao-skill"><img src="https://img.shields.io/badge/Wendao-OpenClaw-2563EB?labelColor=1a1a1a" alt="TripAI OpenClaw"></a>
+    <a href="https://clawhub.ai/trips-ai/wendao-skill"><img src="https://img.shields.io/badge/TripAI-OpenClaw-2563EB?labelColor=1a1a1a" alt="TripAI OpenClaw"></a>
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="MIT License"></a>
   </p>
   <p align="center">
