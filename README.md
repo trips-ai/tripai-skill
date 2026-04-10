@@ -1,7 +1,7 @@
 <p align="center">
   <h1 align="center"> AI Agent Travel Skills — TripGenie & TripAI</h1>
   <p align="center">
-    <strong>Travel search powered by Trip.com and Ctrip — right inside Claude Code, OpenClaw, and other skill-compatible agents.</strong>
+    <strong>Travel search powered by Trip.com and Ctrip — right inside OpenClaw and other skill-compatible agents.</strong>
   </p>
   <p align="center">
     Search flights, hotels, trains, attractions, and trip planning with natural language.<br/>
