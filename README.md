@@ -22,6 +22,10 @@
   </p>
 </p>
 
+<p align="center">
+  <img src="assets/demo.gif" alt="FlyAI Demo" width="700">
+</p>
+
 ---
 
 ## Overview
