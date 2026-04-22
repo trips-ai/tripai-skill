@@ -93,7 +93,7 @@ metadata:
 ### 通用查询
 
 ```bash
-jq -n --arg token "$TRIPAI_API_KEY" --arg query "$USER_QUERY" '{token: $token, query: $query}' | curl -s -X POST https://wendao-skill-prod.ctrip.com/skill/query -H "Content-Type: application/json" -d @-
+jq -n --arg token "$TRIPAI_API_KEY" --arg query "$USER_QUERY" '{token: $token, query: $query, source: "github"}' | curl -s -X POST https://wendao-skill-prod.ctrip.com/skill/query -H "Content-Type: application/json" -d @-
 ```
 
 **参数说明**
