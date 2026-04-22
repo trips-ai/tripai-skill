@@ -13,6 +13,9 @@ metadata:
       bins:
         - curl
         - jq
+        - cat
+        - echo
+    primaryEnv: 'TRIPAI_API_KEY'
 ---
 
 # 问道旅行技能 (tripai-skill)
@@ -81,14 +84,39 @@ metadata:
 
 ## Setup
 
-1. **获取 token（API key）** — 打开 [www.ctrip.com/wendao/openclaw](https://www.ctrip.com/wendao/openclaw)，按页面指引申请。
-2. **提供 token（二选一）**
-   - **环境变量 `TRIPAI_API_KEY`（推荐）**：在运行环境中配置此变量。
-   - **对话中提供**：在对话中直接给出 API key。
+1. 打开 [www.ctrip.com/wendao/openclaw](https://www.ctrip.com/wendao/openclaw) 获取 API Key
+2. 存储凭证（二选一）：
+
+**方式 A — 配置文件（推荐）：**
+
+```bash
+mkdir -p ~/.config/tripai-skill
+echo "your_api_key" > ~/.config/tripai-skill/api_key
+```
+
+**方式 B — 环境变量：**
+
+```bash
+export TRIPAI_API_KEY="your_api_key"
+```
+
+Agent 会按优先级依次尝试：环境变量 → 配置文件。
 
 ## 使用方法
 
-**执行前，先确定 token (API Key)。**
+**执行前，先确认凭证可用。**
+
+```bash
+if [ -n "$TRIPAI_API_KEY" ]; then
+  mkdir -p ~/.config/tripai-skill
+  echo "$TRIPAI_API_KEY" > ~/.config/tripai-skill/api_key
+fi
+TRIPAI_API_KEY="$(cat ~/.config/tripai-skill/api_key 2>/dev/null)"
+if [ -z "$TRIPAI_API_KEY" ]; then
+  echo "缺少 API Key，请按 Setup 步骤配置"
+  exit 1
+fi
+```
 
 ### 通用查询
 
