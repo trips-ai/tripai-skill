@@ -64,25 +64,35 @@ cp -r tripai-skill/ ~/.openclaw/workspace/skills/tripai-skill
 
 ### 2. API Key Acquisition
 
-Both skills require an API key (token) to function.
-
-- **For TripGenie**: Obtain your API key from [www.trip.com/tripgenie/openclaw](https://www.trip.com/tripgenie/openclaw).
-- **For TripAI**: Obtain your API key from [www.ctrip.com/wendao/openclaw](https://www.ctrip.com/wendao/openclaw).
+- **For TripGenie**: Obtain your API key from [www.trip.com/tripgenie/openclaw](https://www.trip.com/tripgenie/openclaw). *(Required)*
+- **For TripAI**: Obtain your API key from [www.ctrip.com/wendao/openclaw](https://www.ctrip.com/wendao/openclaw). *(Optional — works without a key, but requests may be rate-limited)*
 
 **Important**: Treat your API keys like passwords. Do not share them publicly or commit them to version control.
 
-### 3. API Key Configuration (Recommended)
+### 3. API Key Configuration
 
-The most secure way to configure the keys is by setting them as environment variables. The skills will automatically detect and use them.
+**TripGenie** (required):
 
 ```bash
 export TRIPGENIE_API_KEY="your-tripgenie-key-here"
+```
+
+**TripAI** (optional — you can skip this and use the skill without a key):
+
+```bash
 export TRIPAI_API_KEY="your-tripai-key-here"
 ```
 
 You can add these lines to your shell's startup file (e.g., `~/.bashrc`, `~/.zshrc`) to make them persistent.
 
-Alternatively, you can provide the key in-chat when prompted by the agent, but this is less secure and is not persisted. The environment variable will always take precedence.
+For TripAI, the key can also be stored in a config file:
+
+```bash
+mkdir -p ~/.config/tripai-skill
+echo "your-tripai-key-here" > ~/.config/tripai-skill/api_key
+```
+
+The skill checks in order: environment variable → config file. If neither is set, the skill still works but may be subject to rate limiting.
 
 ## Usage Examples
 
@@ -136,9 +146,9 @@ curl -s -X POST https://tripgenie-openclaw-prod.trip.com/openclaw/airline -H "Co
 This triggers the `tripai-skill` skill. An example underlying command:
 
 ```bash
-# Example underlying command for a general query
+# Example underlying command for a general query (token is optional)
 jq -n --arg token "$TRIPAI_API_KEY" --arg query "预订北京三里屯附近的酒店" \
-'{token: $token, query: $query}' | \
+  'if $token != "" then {token: $token, query: $query, source: "github"} else {query: $query, source: "github"} end' | \
 curl -s -X POST https://wendao-skill-prod.ctrip.com/skill/query -H "Content-Type: application/json" -d @-
 ```
 
