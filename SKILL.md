@@ -8,13 +8,13 @@ metadata:
   openclaw:
     emoji: ✈️
     requires:
-      env:
-        - TRIPAI_API_KEY
       bins:
         - curl
         - jq
         - cat
         - echo
+    optionalEnv:
+      - TRIPAI_API_KEY
     primaryEnv: 'TRIPAI_API_KEY'
 ---
 
@@ -84,7 +84,9 @@ metadata:
 
 ## Setup
 
-1. 打开 [www.ctrip.com/wendao/openclaw](https://www.ctrip.com/wendao/openclaw) 获取 API Key
+> **提示**：API Key 为可选项，不配置也可直接使用，但未配置 token 时请求可能受到限流。建议申请并配置以获得稳定服务。
+
+1. （可选）打开 [www.ctrip.com/wendao/openclaw](https://www.ctrip.com/wendao/openclaw) 申请 API Key
 2. 存储凭证（二选一）：
 
 **方式 A — 配置文件（推荐）：**
@@ -104,29 +106,25 @@ Agent 会按优先级依次尝试：环境变量 → 配置文件。
 
 ## 使用方法
 
-**执行前，先确认凭证可用。**
-
 ```bash
 if [ -n "$TRIPAI_API_KEY" ]; then
   mkdir -p ~/.config/tripai-skill
   echo "$TRIPAI_API_KEY" > ~/.config/tripai-skill/api_key
 fi
 TRIPAI_API_KEY="$(cat ~/.config/tripai-skill/api_key 2>/dev/null)"
-if [ -z "$TRIPAI_API_KEY" ]; then
-  echo "缺少 API Key，请按 Setup 步骤配置"
-  exit 1
-fi
 ```
 
 ### 通用查询
 
 ```bash
-jq -n --arg token "$TRIPAI_API_KEY" --arg query "$USER_QUERY" '{token: $token, query: $query, source: "github"}' | curl -s -X POST https://wendao-skill-prod.ctrip.com/skill/query -H "Content-Type: application/json" -d @-
+jq -n --arg token "$TRIPAI_API_KEY" --arg query "$USER_QUERY" \
+  'if $token != "" then {token: $token, query: $query, source: "github"} else {query: $query, source: "github"} end' \
+  | curl -s -X POST https://wendao-skill-prod.ctrip.com/skill/query -H "Content-Type: application/json" -d @-
 ```
 
 **参数说明**
 
 | 参数 | 必填 | 说明 |
 |------|:----:|------|
-| `token` | 是 | API 认证令牌 |
+| `token` | 否 | API 认证令牌。不填时可正常使用，但可能受到限流 |
 | `query` | 是 | 用户的自然语言查询，**内容越详细越好** |
